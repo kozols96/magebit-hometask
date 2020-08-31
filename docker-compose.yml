@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  nginx:
+    container_name: magebit-hometask-nginx
+    image: nginx:stable-alpine
+    ports:
+      - 127.0.0.1:80:80
+    volumes:
+      - .:/var/www:delegated
+      - ./.docker/conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - default
+
+  php:
+    container_name: magebit-hometask-php
+    build:
+      context: .docker/images/php
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www:delegated
+    ports:
+      - 127.0.0.1:9000:9000
+    networks:
+      - default
+    working_dir: /var/www
+
+  mysql:
+    container_name: magebit-hometask-mysql
+    image: mysql:5.7.31
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3306:3306
+    environment:
+      MYSQL_HOST: localhost
+      MYSQL_DATABASE: magebit_hometask
+      MYSQL_USER: magebit_hometask
+      MYSQL_PASSWORD: magebit_hometask
+      MYSQL_ROOT_PASSWORD: magebit_hometask
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - default
+    volumes:
+      - mysql:/var/lib/mysql:delegated
+
+volumes:
+  mysql:
